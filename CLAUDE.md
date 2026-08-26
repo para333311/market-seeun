@@ -73,15 +73,29 @@ python telegram_market_report.py --force
 
 ## 3. 텔레그램 봇 · 발송 대상
 
-- 봇: `J_dailybriefing_Bot` (표시명: J의 일간시황브리핑). 토큰은 스크립트 상단 `TELEGRAM_BOT_TOKEN`에 하드코딩.
+- 봇: `J_dailybriefing_Bot` (표시명: J의 일간시황브리핑).
+- **⚠️ 이 레포는 공개(public) 상태다. 토큰·채팅방 번호를 코드나 문서에 적지 않는다.**
+  2026-08-26 이관 시 하드코딩을 제거하고 스크립트 옆 `.env` 파일에서 읽도록 변경했다
+  (`load_local_env()`, 외부 패키지 불필요). `.env`는 `.gitignore` 등록. 작성법은 `.env.example` 참조.
+
+```
+# .env (깃에 올리지 않음)
+TELEGRAM_BOT_TOKEN=...
+TELEGRAM_CHAT_ID_PERSONAL=...
+TELEGRAM_CHAT_ID_GROUP=...
+```
+
 - 발송 대상은 `CHAT_TARGETS` 리스트로 관리. **대상별로 어떤 메시지를 받을지 개별 지정.**
+  `chat_id`는 위 환경변수에서 읽으며, 값이 비어 있는 대상은 발송에서 자동 제외된다.
 
 ```python
 CHAT_TARGETS = [
-    {"name": "개인 채팅",        "chat_id": "7833923019",  "send_market": True, "send_comment": True},
-    {"name": "그룹 J의 시황정보", "chat_id": "-5174540745", "send_market": True, "send_comment": True},
+    {"name": "개인 채팅",        "chat_id": os.environ.get("TELEGRAM_CHAT_ID_PERSONAL", ""), "send_market": True, "send_comment": True},
+    {"name": "그룹 J의 시황정보", "chat_id": os.environ.get("TELEGRAM_CHAT_ID_GROUP", ""),    "send_market": True, "send_comment": True},
 ]
 ```
+
+- 실행 시 `check_credentials()`가 값 누락을 먼저 확인하고, 없으면 안내 후 종료한다(재시도 없음).
 
 - 2026-08-19 사용자 확인: **두 방 모두 사내용, 외부 유출 위험 없음** → 그룹방 발송 재개. (그 전에는 그룹 발송 중단 상태였음)
 - 그룹에서 코멘트만 빼려면 해당 줄 `send_comment`를 `False`로.
@@ -403,10 +417,23 @@ node scripts/build_briefing.js content.json outputs/MMDD_MMDD_시황브리핑_�
 
 ## 14. Claude Code 이관 체크리스트
 
-1. 레포 루트에 이 파일을 `CLAUDE.md`로 배치 (자동 로드).
-2. `telegram_market_report.py`, `rebuild_weekly.py`를 레포에 커밋. **주의: `TELEGRAM_BOT_TOKEN`이 하드코딩돼 있다.** 레포가 사설이 아니면 토큰을 환경변수나 별도 파일(.gitignore)로 분리할 것.
-3. `weekly-market-briefing_skill.zip` → `.claude/skills/weekly-market-briefing/`에 압축 해제.
-4. 프로젝트 문서 4종(`프로젝트_지침.md`, `claude/주간브리핑_자동발송.md`, `claude/일간시황_메일발송.md`, `claude/Axtival_공모전.md`)도 레포에 보존 권장 — 본 문서가 통합본이지만 원본 이력 가치가 있다.
-5. claude.ai 트리거 2건은 대체 방안 정착 후 삭제 (8절).
-6. Gmail 발송이 필요하면 Claude Code에 Gmail MCP 연결을 별도 설정해야 한다 (claude.ai 커넥터는 안 따라옴).
-7. Windows 작업 스케줄러(`DailyMarketBrief`)는 Claude와 무관하게 계속 동작 — 이관 영향 없음.
+1. ✅ **완료** — 레포 루트에 이 파일을 `CLAUDE.md`로 배치 (자동 로드).
+2. ✅ **완료** — `telegram_market_report.py`, `rebuild_weekly.py` 커밋. 하드코딩돼 있던 `TELEGRAM_BOT_TOKEN`과 `chat_id`는 `.env` 파일로 분리했다 (3절 참조). 코드에는 남아있지 않다.
+3. ✅ **완료** — `weekly-market-briefing` 스킬을 `.claude/skills/weekly-market-briefing/`에 배치. `docx` 의존성용 `package.json` 추가, 예시 content.json으로 빌드 검증 완료.
+4. ⬜ 프로젝트 문서 4종(`프로젝트_지침.md`, `claude/주간브리핑_자동발송.md`, `claude/일간시황_메일발송.md`, `claude/Axtival_공모전.md`)도 레포에 보존 권장 — 본 문서가 통합본이지만 원본 이력 가치가 있다.
+5. ⬜ claude.ai 트리거 2건은 대체 방안 정착 후 삭제 (8절).
+6. ⬜ Gmail 발송이 필요하면 Claude Code에 Gmail MCP 연결을 별도 설정해야 한다 (claude.ai 커넥터는 안 따라옴).
+7. ✅ 조치 불필요 — Windows 작업 스케줄러(`DailyMarketBrief`)는 Claude와 무관하게 계속 동작.
+
+### 이관 후 사용자 PC에서 해야 할 일 (1회)
+
+`C:\Telegram Desktop\` 폴더에 `.env` 파일을 만들고 토큰·채팅방 번호를 넣어야
+일간 발송이 계속 동작한다. 이 작업 전에는 `[설정 오류]`를 남기고 종료한다.
+
+### ⚠️ 레포 공개 상태 관련 미해결 사항
+
+- 이 레포는 **public**이다. 사내 전용 자료(채널 원문)가 올라가지 않도록
+  `backdata/`, `archive/`, `briefings/`, `log.txt`를 `.gitignore`에 등록해 두었다.
+- **채팅방 번호 2개가 초기 커밋(`9c81f83`) 이력에 남아 있다.** 봇 토큰은 포함되지 않았다.
+  레포를 private으로 전환하는 것이 가장 확실한 해결책이다.
+- 7절 컴플라이언스(대외 배포·인용 금지)를 고려하면 **private 전환을 권장**한다.
