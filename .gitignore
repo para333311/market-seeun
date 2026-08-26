@@ -1,0 +1,14 @@
+# 비밀값 (토큰 등) — 이 레포는 public이므로 절대 커밋 금지
+.env
+.env.*
+*_secrets.py
+config_local.py
+secrets.json
+
+# Python
+__pycache__/
+*.pyc
+
+# 백업 파일 (덮어쓰기 전 자동 백업본)
+*_backup_*.py
+*_backup.txt
