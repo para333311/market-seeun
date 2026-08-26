@@ -9,6 +9,9 @@ secrets.json
 __pycache__/
 *.pyc
 
+# Node
+node_modules/
+
 # 백업 파일 (덮어쓰기 전 자동 백업본)
 *_backup_*.py
 *_backup.txt

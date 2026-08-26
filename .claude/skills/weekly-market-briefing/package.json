@@ -1,0 +1,13 @@
+{
+  "name": "weekly-market-briefing",
+  "version": "1.0.0",
+  "description": "주간 시황브리핑 docx 생성기 (build_briefing.js) 의존성",
+  "main": "scripts/build_briefing.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "docx": "^9.7.1"
+  }
+}
