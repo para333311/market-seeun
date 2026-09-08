@@ -2,7 +2,7 @@
 
 > 이 문서는 claude.ai 프로젝트에서 Claude Code 레포로 이관하기 위한 완전 인수인계서다.
 > **레포 루트에 `CLAUDE.md`로 두면 Claude Code가 매 세션 자동으로 읽는다.**
-> 마지막 갱신: 2026-08-26. 이 문서 하나로 지금까지의 모든 맥락·규칙·미해결 이슈를 파악할 수 있어야 한다.
+> 마지막 갱신: 2026-09-08. 이 문서 하나로 지금까지의 모든 맥락·규칙·미해결 이슈를 파악할 수 있어야 한다.
 
 ---
 
@@ -11,9 +11,9 @@
 SK증권 영업점 소속 사용자가 운영하는 **시장 브리핑 자동화 시스템**. 산출물은 두 가지.
 
 1. **일간 텔레그램 브리핑** — 매일 06:30, `telegram_market_report.py`가 시세 수집 + 증권사 텔레그램 채널 7곳 본문 분석 → 텔레그램 봇으로 2건 분리 발송 (📊 데일리 시황 / 🧭 마켓 코멘트).
-2. **주간 시황브리핑 docx** — 매주 화요일 15:00 이후, 주간 백데이터 txt를 `weekly-market-briefing` 스킬로 처리 → 수요일 아침 회의 1~2분 구두 발표용 문서.
+2. **주간 시황브리핑 docx** — 매주 화요일 15:00 이후, 주간 백데이터 txt를 `weekly-market-briefing` 스킬로 처리 → 수요일 아침 회의 **2분 내외** 구두 발표용 문서(+ 화면 투사용 PDF).
 
-부수: 일간·주간 결과물의 개인메일 발송(예약 작업, **현재 고장**), Axtival 사내 공모전 응모(마감 9/8).
+부수: 일간·주간 결과물의 개인메일 발송(예약 작업, **현재 고장**), Axtival 사내 공모전 — **2026-09-08 접수 완료**(10절).
 
 외부 AI API 미사용(비용 0원). 모든 리서치 콘텐츠는 **사내 참고용, 대외 배포·인용 금지**.
 
@@ -195,7 +195,7 @@ SCHED_LINE_LEN = 115
 
 > **지난주 화요일 15:00 ~ 이번주 화요일 15:00**
 
-작성: 화요일 15:00 이후 / 발표: 수요일 아침 회의(1~2분) / 캘린더 알림: 화요일 15:00 등록됨.
+작성: 화요일 15:00 이후 / 발표: 수요일 아침 회의(**2분 내외**, 5-5 참조) / 캘린더 알림: 화요일 15:00 등록됨.
 
 ### 5-2. 아카이브 파일 규칙
 
@@ -249,7 +249,7 @@ python rebuild_weekly.py 0804 0811
 - 접속 표현("그런데", "다만", "반면")으로 흐름을 잇는다.
 - 존댓말 격식체(~습니다). 이모지 금지.
 
-**표기 규칙**: "전년비"→"전년 대비", "전기비"→"전분기 대비". 지수·등락률 소수점 둘째 자리. 금액 단위 조/억 원·억/조 달러 통일. 강조(`**...**`)는 섹션당 1~2개, 문서 전체 5~7개, 기록·전환점이 되는 숫자만.
+**표기 규칙**: "전년비"→"전년 대비", "전기비"→"전분기 대비". 지수·등락률 소수점 둘째 자리. 금액 단위 조/억 원·억/조 달러 통일. 강조(`**...**`)는 섹션당 1~2개, 기록·전환점이 되는 숫자만. 총개수는 분량에 비례시킨다(5-5) — 2분 기준 5개 내외.
 
 **모든 수치는 백데이터에서 직접 확인한 값만.** 기억·추정 금지. 종가가 없고 익일 장중 시세만 있으면 역산 검증(예: 익일 장중 `6,337.94(-257.51p)` → 전일 종가 `6,595.45`).
 
@@ -275,10 +275,76 @@ python rebuild_weekly.py 0804 0811
 node scripts/build_briefing.js content.json outputs/MMDD_MMDD_시황브리핑_발표용.docx
 ```
 
-4. **검증 생략 금지**: docx → pdf 변환 → 페이지 이미지 렌더링 후 직접 확인 (① 음영 위치 ② 줄바꿈 ③ 2쪽 이내).
+4. **검증 생략 금지** — ① 음영이 `**...**` 구간에만 걸렸는지 ② 줄바꿈 깨짐 ③ 분량.
+   SKILL.md는 LibreOffice(`soffice.py`) + `pdftoppm`을 쓰라고 하지만
+   **이 환경의 LibreOffice는 일반 txt조차 변환하지 못한다(2026-09-01 확인).**
+   대신 docx의 XML을 직접 파싱해 검증한다:
+
+```bash
+python3 -c "
+import zipfile
+from xml.etree import ElementTree as ET
+W='{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+root=ET.fromstring(zipfile.ZipFile('<출력>.docx').read('word/document.xml').decode('utf-8'))
+tot=0
+for p in root.iter(W+'p'):
+    t=''.join(x.text or '' for x in p.iter(W+'t')); tot+=len(t)
+    k='불릿' if p.find('.//'+W+'numPr') is not None else '머리'
+    for r in p.iter(W+'r'):
+        s=r.find('.//'+W+'shd')
+        if s is not None: print('  음영:', ''.join(x.text or '' for x in r.iter(W+'t')))
+    print(f'[{k}] {len(t):3d}자 {t[:40]}')
+print('총', tot, '자')
+"
+```
+
 5. 파일 전달 + 발표 시 강조 포인트 3가지 불릿.
 
-산출물: `MMDD_MMDD_시황브리핑_발표용.docx`, 5섹션 × 3~4불릿, A4 1.5쪽 내외. **8/4~8/11 주차까지 생성 완료.**
+### 5-5. 분량 기준 — 실측값 (2026-09-01 교정)
+
+**기존 지침의 "5섹션 × 3~4불릿 = 1~2분"은 틀렸다.** 실제 낭독 속도로 재보면 약 6분이다.
+한국어 격식체 낭독은 **350~450자/분**이며, 아래 표를 기준으로 삼는다.
+
+| 목표 | 본문 글자수 | 불릿 수 | 분량 |
+|---|---|---|---|
+| 1분 | 약 450~500자 | 5~6개 (섹션당 1개) | A4 반쪽 |
+| **2분 (기본값)** | **850~950자** | **11개 내외 (섹션당 2~3개)** | **A4 1쪽** |
+| 3분 | 약 1,300자 | 15~16개 | A4 1.5쪽 |
+
+- 섹션 5개 구조는 어떤 분량에서도 유지한다(5-3 참조).
+- 강조(`**...**`)는 분량에 비례시킨다. 2분이면 5개 내외가 적정이며,
+  분량이 줄었는데 5~7개를 고집하면 거의 모든 불릿이 노랗게 되어 강조 효과가 사라진다.
+- 작성 후 `본문 글자수 ÷ 400`으로 낭독 시간을 확인한다.
+
+### 5-6. 화면 투사용 PDF (2026-09-01 신설)
+
+발표 중 화면에 띄우고 설명할 용도. docx(원고)와 짝으로 만든다.
+
+- 파일명: `MMDD_MMDD_시황브리핑_핵심요약.pdf`, **A4 가로 2쪽** (1쪽 ≈ 1분)
+- 1쪽: KPI 4개 + 코스피 5거래일 선차트 + 핵심 3가지 + 그 외 짚어둘 숫자
+- 2쪽: 근거 차트 3개(실적·금리·수급) + 향후 일정
+- 소스는 `briefings/highlight_MMDD_MMDD.html`. 차트는 인라인 SVG로 직접 그린다.
+- **한글 폰트가 이 환경에 없다.** `npm pack @fontsource/noto-sans-kr`으로 받아
+  woff2를 base64로 HTML에 내장한다. (fonts.google.com은 네트워크 정책상 차단됨)
+- PDF 변환·검증(LibreOffice 불가 대신):
+
+```bash
+/opt/pw-browsers/chromium-1194/chrome-linux/chrome --headless --no-sandbox --disable-gpu \
+  --no-pdf-header-footer --virtual-time-budget=12000 \
+  --print-to-pdf="<출력>.pdf" <입력>.html
+```
+```bash
+pip install --quiet pypdfium2 pillow && python3 -c "
+import pypdfium2 as pdfium
+d=pdfium.PdfDocument('<출력>.pdf')
+for i in range(len(d)): d[i].render(scale=2).to_pil().save(f'/tmp/p{i+1}.png')
+"
+```
+
+렌더된 PNG를 **직접 눈으로 보고** 잘림·겹침·빈 공간을 확인한다.
+
+산출물: `MMDD_MMDD_시황브리핑_발표용.docx`(원고) + `MMDD_MMDD_시황브리핑_핵심요약.pdf`(화면용).
+**8/4~8/11, 8/25~9/1 주차 생성 완료.**
 
 ---
 
@@ -340,11 +406,17 @@ node scripts/build_briefing.js content.json outputs/MMDD_MMDD_시황브리핑_�
 
 - claude.ai에서는 `/mnt/skills/user/weekly-market-briefing/`에 있었다. Claude Code에서는 자동으로 안 붙는다.
 - **함께 전달한 `weekly-market-briefing_skill.zip`을 레포의 `.claude/skills/weekly-market-briefing/`에 풀어 넣을 것.** 구성: `SKILL.md`, `scripts/build_briefing.js`(docx 빌더, Node), `references/example_content.json`(완성 예시).
-- 빌드 의존성: Node.js + (SKILL.md의 검증 단계용) LibreOffice/pdftoppm. Claude Code 환경에 없으면 검증 단계는 docx 직접 열람으로 대체.
+- 빌드 의존성: Node.js + `docx` 패키지(`package.json` 포함, `npm install`).
+- **검증 단계 주의**: SKILL.md는 LibreOffice/pdftoppm을 쓰라고 하지만 이 환경에서는 둘 다 못 쓴다.
+  LibreOffice는 일반 txt조차 변환 실패하고 pdftoppm은 미설치다. 대체 방법은 5-4·5-6 참조.
+- **⚠️ 스킬이 두 곳에 있다.** 레포 사본(`.claude/skills/`)과 claude.ai 계정 동기화 사본
+  (`~/.claude/skills/synced/…`)이 공존한다. 계정 사본은 어느 세션에서나 뜨지만 CLAUDE.md는 안 따라온다.
+  SKILL.md 원문은 "전망성 문장은 출처를 명시하면 허용"이라 5-3의 절대 금지 규칙과 충돌하므로,
+  **이 레포 밖에서 브리핑을 만들면 컴플라이언스 위반이 난다.** 반드시 이 레포 세션에서 작업할 것.
 
 ---
 
-## 10. Axtival 공모전 (진행 중, 마감 임박)
+## 10. Axtival 공모전 (✅ 2026-09-08 접수 완료 — 결과 대기)
 
 | 항목 | 값 |
 |---|---|
@@ -360,12 +432,16 @@ node scripts/build_briefing.js content.json outputs/MMDD_MMDD_시황브리핑_�
 
 공모전용 추가 기능(08-20 구현): 워치리스트(`WATCHLIST`, `build_watch_rows()`), 컴플라이언스 차단·집계(`_OPINION_PATTERN`, `FILTER_STATS`), 절감시간 계측(`update_stats()`, `--stats`).
 
-**남은 할 일:**
-- [ ] PPT 표지·마지막장 2곳 `○○○` 실명 교체
-- [ ] 실제 텔레그램 발송 화면 캡처로 6페이지 목업 교체
-- [ ] `--stats` 실측 누적 후 7페이지 수치 갱신
-- [ ] 9/8 전 그룹웨어 접수 (PPT 원본 + PDF + 산출물)
-- [ ] 2차 PT(9.16) 대비 `--stats` 시연 준비
+**접수 완료 (2026-09-08).** 준비했던 자료를 수정 없이 그대로 제출했다.
+따라서 아래 항목들은 제출본에 반영되지 않은 상태로 마감됐다 — 2차 PT 진출 시 보완 대상이다.
+
+- [x] 9/8 그룹웨어 접수 (PPT 원본 + PDF + 산출물) — **완료**
+- [ ] PPT 표지·마지막장 2곳 `○○○` 실명 교체 *(미반영 제출)*
+- [ ] 실제 텔레그램 발송 화면 캡처로 6페이지 목업 교체 *(미반영 제출)*
+- [ ] `--stats` 실측 누적 후 7페이지 수치 갱신 *(미반영 제출)*
+- [ ] 2차 PT(9.16) 대비 `--stats` 시연 준비 — 1차 결과 9/14 확인 후 진행
+
+**다음 확인일: 9/14 (1차 결과 발표).**
 
 ---
 
@@ -398,7 +474,9 @@ node scripts/build_briefing.js content.json outputs/MMDD_MMDD_시황브리핑_�
 3. 두바이유·브라질 국채금리 소스 미확보.
 4. 경제지표 발표 캘린더 미구현 (investing.com 크롤링은 차단·약관 문제로 배제, FRED API 보류).
 5. 일정 섹션은 채널 글에 언급된 일정만 잡음 → 언급 없으면 빈 채로 나갈 수 있음.
-6. Axtival 남은 할 일 (10절 체크리스트).
+6. Axtival은 9/8 접수 완료. 1차 결과(9/14) 확인 후 2차 PT 준비 여부 결정 (10절).
+7. `weekly-market-briefing` 스킬이 레포·계정 두 곳에 존재하고 SKILL.md와 CLAUDE.md 5-3의
+   컴플라이언스 규칙이 서로 충돌한다. 계정 사본은 claude.ai에서만 수정 가능 (9절).
 
 ---
 
@@ -411,7 +489,9 @@ node scripts/build_briefing.js content.json outputs/MMDD_MMDD_시황브리핑_�
 | 2026-08-20 | `…` 잘림 전면 제거(clean_cut), 시세 나열·깨진 문장 필터, 점수 상한제, 섹션 재구성(핵심 3줄+구분선), 섹션 간 중복 제거. 주간 브리핑 자동발송 트리거 등록. Axtival 착수 + 공모전용 3기능 구현 |
 | 2026-08-21 | 일간 메일 발송 트리거 등록 → 첫 실행에서 PC 미연결 확인 |
 | 2026-08-25 | 기기 바인딩 부재 확정 (클라우드 생성 작업엔 바인딩 불가). 중복 방지용 임시 작업 삭제 |
-| 2026-08-26 | 미발송 재확인. **Claude Code 레포로 이관 결정, 본 인수인계서 작성** |
+| 2026-08-26 | 미발송 재확인. **Claude Code 레포로 이관 결정, 본 인수인계서 작성**. 토큰·chat_id를 `.env`로 분리, 스킬을 레포에 배치 |
+| 2026-09-01 | 8/25~9/1 주차 브리핑 생성. **분량 기준이 실측과 3배 어긋난 것을 확인해 5-5 신설**. LibreOffice 변환 불가 확인 → 검증 방법 교체. **화면 투사용 PDF(5-6) 신설** |
+| 2026-09-08 | **Axtival 접수 완료**(수정 없이 제출). 본 지침을 9/1 실측 결과로 갱신 |
 
 ---
 
