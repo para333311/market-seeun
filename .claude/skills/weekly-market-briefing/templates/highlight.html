@@ -14,8 +14,8 @@
   --grid:#e1e0d9;
   --axis:#c3c2b7;
   --border:rgba(11,11,11,0.10);
-  --s1:#2a78d6;      /* 시리즈 1 (blue 450) */
-  --s1-lite:#86b6ef; /* blue 250 - ordinal 하한 */
+  --s1:#2a78d6;
+  --s1-lite:#86b6ef;
   --s1-dk:#184f95;
   --good:#006300;
   --crit:#d03b3b;
@@ -41,47 +41,60 @@ body{
   border-bottom:2px solid var(--s1); padding-bottom:6px; margin-bottom:9px; flex:none;
 }
 .head h1{ font-size:19px; font-weight:700; letter-spacing:-0.02em; }
-.head .sub{ font-size:12.5px; color:var(--ink-2); font-weight:500; }
-.head .pg{ margin-left:auto; font-size:11px; color:var(--muted); font-weight:500; }
+.head .sub{ font-size:13px; color:var(--ink-2); font-weight:600; }
+.head .pg{ margin-left:auto; font-size:11px; color:var(--muted); font-weight:600; }
 
+/* ── KPI ── */
 .kpi{ display:grid; grid-template-columns:repeat(4,1fr); gap:9px; flex:none; margin-bottom:9px; }
-.tile{ background:var(--surface-1); border:1px solid var(--border); border-radius:9px; padding:8px 12px 9px; }
-.tile .lab{ font-size:11px; color:var(--muted); font-weight:500; margin-bottom:2px; }
-.tile .val{ font-size:23px; font-weight:700; line-height:1.06; letter-spacing:-0.02em; }
-.tile .dlt{ font-size:11px; font-weight:600; margin-top:3px; }
+.tile{ background:var(--surface-1); border:1px solid var(--border); border-radius:9px; padding:9px 13px 10px; }
+.tile .lab{ font-size:11.5px; color:var(--muted); font-weight:600; margin-bottom:2px; }
+.tile .val{ font-size:26px; font-weight:700; line-height:1.05; letter-spacing:-0.025em; font-variant-numeric:tabular-nums; }
+.tile .dlt{ font-size:12px; font-weight:700; margin-top:4px; }
 .up{ color:var(--good); } .dn{ color:var(--crit); } .flat{ color:var(--ink-2); }
 
 /* ── 섹션 카드: docx 섹션 순서와 1:1 대응 ── */
 .sec{ background:var(--surface-1); border:1px solid var(--border); border-radius:9px;
-      padding:9px 14px 10px; display:flex; flex-direction:column; min-height:0; }
-.sec-h{ display:flex; align-items:center; gap:9px; margin-bottom:6px; flex:none; }
-.sec-h .num{ flex:none; width:22px; height:22px; border-radius:6px; background:var(--s1);
-             color:#fff; font-size:12.5px; font-weight:700;
+      padding:9px 15px 10px; display:flex; flex-direction:column; min-height:0; }
+.sec-h{ display:flex; align-items:center; gap:9px; margin-bottom:7px; flex:none; }
+.sec-h .num{ flex:none; width:23px; height:23px; border-radius:6px; background:var(--s1);
+             color:#fff; font-size:13px; font-weight:700;
              display:flex; align-items:center; justify-content:center; }
-.sec-h h2{ font-size:13.5px; font-weight:700; margin:0; }
+.sec-h h2{ font-size:14px; font-weight:700; margin:0; letter-spacing:-0.01em; }
 .sec-h .tag{ margin-left:auto; font-size:10.5px; color:var(--muted); font-weight:600; }
-.sec-b{ display:grid; grid-template-columns:1.05fr 1fr; gap:16px; flex:1; min-height:0; align-items:center; }
+.sec-b{ display:grid; grid-template-columns:1.05fr 1fr; gap:18px; flex:1; min-height:0; align-items:center; }
 .sec-viz{ min-height:0; height:100%; display:flex; align-items:center; justify-content:center; }
 .sec-viz svg{ width:100%; height:100%; }
-.sec-tx{ font-size:12.2px; line-height:1.6; color:var(--ink-2); }
-.sec-tx b{ color:var(--ink); font-weight:700; }
-.li{ display:flex; gap:7px; margin-bottom:6px; }
+
+/* ── 개조식 텍스트 (발표자용 화면 자료: 존댓말 없음) ── */
+.tx{ display:flex; flex-direction:column; justify-content:center; height:100%; }
+.lead{
+  font-size:15.5px; font-weight:700; color:var(--ink); line-height:1.38;
+  letter-spacing:-0.015em; padding-left:10px; border-left:3px solid var(--s1);
+  margin-bottom:9px;
+}
+.lead .n{ font-variant-numeric:tabular-nums; }
+.li{ font-size:13px; line-height:1.5; color:var(--ink-2); display:flex; gap:7px; margin-bottom:5px; }
 .li:last-child{ margin-bottom:0; }
-.li::before{ content:"·"; color:var(--s1); font-weight:700; flex:none; }
-.hl{ background:#FFF0A5; font-weight:700; color:var(--ink); padding:0 2px; border-radius:2px; }
+.li::before{ content:""; flex:none; width:4px; height:4px; border-radius:50%;
+             background:var(--axis); margin-top:8px; }
+.li b{ color:var(--ink); font-weight:700; font-variant-numeric:tabular-nums; }
+.li .mut{ color:var(--muted); }
+.hl{ background:#FFF0A5; font-weight:700; color:var(--ink); padding:0 3px; border-radius:2px; }
 
-.meter{ margin-bottom:9px; }
+/* ── 미터 ── */
+.meter{ margin-bottom:11px; }
 .meter:last-child{ margin-bottom:0; }
-.meter .mh{ display:flex; align-items:baseline; margin-bottom:4px; }
-.meter .mn{ font-size:12px; font-weight:600; }
-.meter .mv{ margin-left:auto; font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; }
-.meter .track{ height:10px; background:var(--grid); border-radius:5px; overflow:hidden; }
-.meter .fill{ height:100%; background:var(--s1); border-radius:5px; }
-.meter .msub{ font-size:10.5px; color:var(--muted); margin-top:3px; font-weight:500; }
+.meter .mh{ display:flex; align-items:baseline; margin-bottom:5px; }
+.meter .mn{ font-size:13px; font-weight:700; }
+.meter .mv{ margin-left:auto; font-size:17px; font-weight:700; font-variant-numeric:tabular-nums; }
+.meter .track{ height:11px; background:var(--grid); border-radius:6px; overflow:hidden; }
+.meter .fill{ height:100%; background:var(--s1); border-radius:6px; }
+.meter .msub{ font-size:11px; color:var(--muted); margin-top:4px; font-weight:600; }
 
-.cal{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px 16px; }
-.ci{ display:flex; gap:8px; align-items:baseline; font-size:12px; }
-.ci .d{ flex:none; font-weight:700; color:var(--s1); font-variant-numeric:tabular-nums; min-width:42px; }
+/* ── 일정 ── */
+.cal{ display:grid; grid-template-columns:repeat(2,1fr); gap:7px 18px; }
+.ci{ display:flex; gap:9px; align-items:baseline; font-size:12.5px; }
+.ci .d{ flex:none; font-weight:700; color:var(--s1); font-variant-numeric:tabular-nums; min-width:40px; }
 .ci .t{ color:var(--ink-2); line-height:1.4; }
 .ci .t b{ color:var(--ink); font-weight:700; }
 
@@ -92,37 +105,42 @@ body{
 .foot .r{ margin-left:auto; }
 
 svg text{ font-family:"Noto Sans KR", system-ui, sans-serif; }
-.ax{ fill:var(--muted); font-size:11px; font-weight:500; }
-.vlab{ fill:var(--ink); font-size:12.5px; font-weight:700; }
-.vlab-s{ fill:var(--ink-2); font-size:11px; font-weight:600; }
+.ax{ fill:var(--muted); font-size:11.5px; font-weight:600; }
+.vlab{ fill:var(--ink); font-size:13px; font-weight:700; }
+.vlab-s{ fill:var(--ink-2); font-size:11.5px; font-weight:600; }
 </style>
 
 <!--
   ============================================================
   화면 투사용 PDF 뼈대 (2026-09-29 개편)
 
-  ★ 원칙: PDF 블록 순서 = docx 섹션 순서 ①~⑤.
+  ★ 규칙 1 — PDF 블록 순서 = docx 섹션 순서 ①~⑤.
      발표자가 페이지를 되돌리지 않도록 위에서 아래로만 읽힌다.
+     1쪽: KPI 4개 + 섹션 ① ②   /   2쪽: 섹션 ③ ④ ⑤
 
-  1쪽: head + KPI 4개 + 섹션 ① + 섹션 ②
-  2쪽: head + 섹션 ③ + 섹션 ④ + 섹션 ⑤
+  ★ 규칙 2 — PDF 본문은 개조식. 존댓말(~습니다/~입니다)을 쓰지 않는다.
+     원고(docx)는 낭독용이라 존댓말, PDF는 보여주는 자료라 개조식으로 나뉜다.
+     · 화살표(→), 가운뎃점(·), 대시(—)로 관계를 압축
+     · 숫자는 <b>로 굵게, 배경 설명은 <span class="mut">로 흐리게
 
-  각 섹션 카드 구조:
+  섹션 카드 구조:
     <div class="sec" style="flex:1; min-height:0;">
       <div class="sec-h">
         <span class="num">N</span>
-        <h2>{docx 섹션 제목과 동일}</h2>
+        <h2>{docx 섹션 제목을 개조식으로}</h2>
         <span class="tag">{기준 시점}</span>
       </div>
       <div class="sec-b">
-        <div class="sec-viz"> ...인라인 SVG 차트... </div>
-        <div class="sec-tx">
-          <div class="li"><span>...요지. <span class="hl">강조</span>...</span></div>
+        <div class="sec-viz"> ...인라인 SVG... </div>
+        <div class="tx">
+          <div class="lead">한 줄 결론 — 숫자 포함</div>
+          <div class="li"><span>보조 사실 <b>수치</b></span></div>
         </div>
       </div>
     </div>
 
-  좌우 배치는 <div class="sec-b">가 기본 2열(차트 | 텍스트).
-  텍스트만 쓸 때는 좌우 어느 쪽이든 .sec-tx 를 넣으면 된다.
+  .lead = 15.5px 굵게 + 왼쪽 파란 선 (한눈에 들어오는 결론 한 줄)
+  .li   = 13px 점 불릿 (보조 사실 3~4개)
+  차트 캡션과 .li 내용이 겹치지 않게 한다.
   ============================================================
 -->
