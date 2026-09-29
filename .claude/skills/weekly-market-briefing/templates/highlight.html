@@ -1,0 +1,128 @@
+<meta charset="utf-8">
+<title>주간 시황 브리핑 핵심</title>
+<style>
+/*FONTS*/
+
+@page { size: A4 landscape; margin: 0; }
+
+:root{
+  --surface-1:#fcfcfb;
+  --plane:#f9f9f7;
+  --ink:#0b0b0b;
+  --ink-2:#52514e;
+  --muted:#898781;
+  --grid:#e1e0d9;
+  --axis:#c3c2b7;
+  --border:rgba(11,11,11,0.10);
+  --s1:#2a78d6;      /* 시리즈 1 (blue 450) */
+  --s1-lite:#86b6ef; /* blue 250 - ordinal 하한 */
+  --s1-dk:#184f95;
+  --good:#006300;
+  --crit:#d03b3b;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+  font-family:"Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color:var(--ink); background:var(--plane);
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+}
+
+.page{
+  width:297mm; height:210mm; padding:10mm 13mm 8mm;
+  background:var(--plane); display:flex; flex-direction:column;
+  overflow:hidden;
+}
+.page + .page{ break-before:page; }
+
+.head{
+  display:flex; align-items:baseline; gap:12px;
+  border-bottom:2px solid var(--s1); padding-bottom:6px; margin-bottom:9px; flex:none;
+}
+.head h1{ font-size:19px; font-weight:700; letter-spacing:-0.02em; }
+.head .sub{ font-size:12.5px; color:var(--ink-2); font-weight:500; }
+.head .pg{ margin-left:auto; font-size:11px; color:var(--muted); font-weight:500; }
+
+.kpi{ display:grid; grid-template-columns:repeat(4,1fr); gap:9px; flex:none; margin-bottom:9px; }
+.tile{ background:var(--surface-1); border:1px solid var(--border); border-radius:9px; padding:8px 12px 9px; }
+.tile .lab{ font-size:11px; color:var(--muted); font-weight:500; margin-bottom:2px; }
+.tile .val{ font-size:23px; font-weight:700; line-height:1.06; letter-spacing:-0.02em; }
+.tile .dlt{ font-size:11px; font-weight:600; margin-top:3px; }
+.up{ color:var(--good); } .dn{ color:var(--crit); } .flat{ color:var(--ink-2); }
+
+/* ── 섹션 카드: docx 섹션 순서와 1:1 대응 ── */
+.sec{ background:var(--surface-1); border:1px solid var(--border); border-radius:9px;
+      padding:9px 14px 10px; display:flex; flex-direction:column; min-height:0; }
+.sec-h{ display:flex; align-items:center; gap:9px; margin-bottom:6px; flex:none; }
+.sec-h .num{ flex:none; width:22px; height:22px; border-radius:6px; background:var(--s1);
+             color:#fff; font-size:12.5px; font-weight:700;
+             display:flex; align-items:center; justify-content:center; }
+.sec-h h2{ font-size:13.5px; font-weight:700; margin:0; }
+.sec-h .tag{ margin-left:auto; font-size:10.5px; color:var(--muted); font-weight:600; }
+.sec-b{ display:grid; grid-template-columns:1.05fr 1fr; gap:16px; flex:1; min-height:0; align-items:center; }
+.sec-viz{ min-height:0; height:100%; display:flex; align-items:center; justify-content:center; }
+.sec-viz svg{ width:100%; height:100%; }
+.sec-tx{ font-size:12.2px; line-height:1.6; color:var(--ink-2); }
+.sec-tx b{ color:var(--ink); font-weight:700; }
+.li{ display:flex; gap:7px; margin-bottom:6px; }
+.li:last-child{ margin-bottom:0; }
+.li::before{ content:"·"; color:var(--s1); font-weight:700; flex:none; }
+.hl{ background:#FFF0A5; font-weight:700; color:var(--ink); padding:0 2px; border-radius:2px; }
+
+.meter{ margin-bottom:9px; }
+.meter:last-child{ margin-bottom:0; }
+.meter .mh{ display:flex; align-items:baseline; margin-bottom:4px; }
+.meter .mn{ font-size:12px; font-weight:600; }
+.meter .mv{ margin-left:auto; font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; }
+.meter .track{ height:10px; background:var(--grid); border-radius:5px; overflow:hidden; }
+.meter .fill{ height:100%; background:var(--s1); border-radius:5px; }
+.meter .msub{ font-size:10.5px; color:var(--muted); margin-top:3px; font-weight:500; }
+
+.cal{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px 16px; }
+.ci{ display:flex; gap:8px; align-items:baseline; font-size:12px; }
+.ci .d{ flex:none; font-weight:700; color:var(--s1); font-variant-numeric:tabular-nums; min-width:42px; }
+.ci .t{ color:var(--ink-2); line-height:1.4; }
+.ci .t b{ color:var(--ink); font-weight:700; }
+
+.foot{
+  flex:none; margin-top:8px; padding-top:6px; border-top:1px solid var(--grid);
+  font-size:9.8px; color:var(--muted); display:flex;
+}
+.foot .r{ margin-left:auto; }
+
+svg text{ font-family:"Noto Sans KR", system-ui, sans-serif; }
+.ax{ fill:var(--muted); font-size:11px; font-weight:500; }
+.vlab{ fill:var(--ink); font-size:12.5px; font-weight:700; }
+.vlab-s{ fill:var(--ink-2); font-size:11px; font-weight:600; }
+</style>
+
+<!--
+  ============================================================
+  화면 투사용 PDF 뼈대 (2026-09-29 개편)
+
+  ★ 원칙: PDF 블록 순서 = docx 섹션 순서 ①~⑤.
+     발표자가 페이지를 되돌리지 않도록 위에서 아래로만 읽힌다.
+
+  1쪽: head + KPI 4개 + 섹션 ① + 섹션 ②
+  2쪽: head + 섹션 ③ + 섹션 ④ + 섹션 ⑤
+
+  각 섹션 카드 구조:
+    <div class="sec" style="flex:1; min-height:0;">
+      <div class="sec-h">
+        <span class="num">N</span>
+        <h2>{docx 섹션 제목과 동일}</h2>
+        <span class="tag">{기준 시점}</span>
+      </div>
+      <div class="sec-b">
+        <div class="sec-viz"> ...인라인 SVG 차트... </div>
+        <div class="sec-tx">
+          <div class="li"><span>...요지. <span class="hl">강조</span>...</span></div>
+        </div>
+      </div>
+    </div>
+
+  좌우 배치는 <div class="sec-b">가 기본 2열(차트 | 텍스트).
+  텍스트만 쓸 때는 좌우 어느 쪽이든 .sec-tx 를 넣으면 된다.
+  ============================================================
+-->
